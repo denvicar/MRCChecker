@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -14,6 +15,8 @@ import (
 
 const mal_api = "https://api.myanimelist.net/v2/manga/{id}?fields=title,start_date,end_date,mean,rank,popularity,num_list_users,genres,media_type"
 const mu_api = "https://api.mangaupdates.com/v1/series/"
+
+var api_key = os.Getenv("API_KEY")
 
 var client = new(http.Client)
 
@@ -98,7 +101,7 @@ func getMUInfo(name string) muRecord {
 
 	defer res.Body.Close()
 
-	body, _ := ioutil.ReadAll(res.Body)
+	body, _ := io.ReadAll(res.Body)
 
 	var data = &muResponse{}
 	json.Unmarshal(body, data)
@@ -121,7 +124,7 @@ func getMALResponse(url string) []byte {
 		return []byte{}
 	}
 
-	req.Header.Add("X-MAL-CLIENT-ID", "API_KEY")
+	req.Header.Add("X-MAL-CLIENT-ID", api_key)
 	r, e := client.Do(req)
 
 	if e != nil {
@@ -131,7 +134,7 @@ func getMALResponse(url string) []byte {
 
 	defer r.Body.Close()
 
-	data, e := ioutil.ReadAll(r.Body)
+	data, e := io.ReadAll(r.Body)
 	if e != nil {
 		fmt.Printf("Error while reading the server response\n")
 		return []byte{}
